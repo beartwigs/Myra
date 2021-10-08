@@ -337,7 +337,7 @@ namespace Myra.Graphics2D
 			var samplerState = _textureFiltering == TextureFiltering.Nearest ? SamplerState.PointClamp : SamplerState.LinearClamp;
 
 			_renderer.Begin(SpriteSortMode.Deferred,
-				BlendState.AlphaBlend,
+				BlendState.NonPremultiplied,
 				samplerState,
 				null,
 				UIRasterizerState,
