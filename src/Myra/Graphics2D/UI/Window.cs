@@ -152,6 +152,7 @@ namespace Myra.Graphics2D.UI
 
 		public event EventHandler<CancellableEventArgs> Closing;
 		public event EventHandler Closed;
+        public event EventHandler Showed;
 
 		public Window(string styleName = Stylesheet.DefaultStyleName)
 		{
@@ -265,6 +266,8 @@ namespace Myra.Graphics2D.UI
 				Top = position.Value.Y;
 				IsWindowPlaced = true;
 			}
+
+			Showed?.Invoke(this);
 		}
 
 		public void Show(Desktop desktop, Point? position = null)
