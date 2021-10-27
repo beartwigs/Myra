@@ -1572,7 +1572,7 @@ namespace Myra.Graphics2D.UI
 
 		private void DesktopOnTouchMoved(object sender, EventArgs args)
 		{
-			if (_startPos == null || !IsDraggable)
+			if (_startPos == null || !IsDraggable || Desktop == null)
 			{
 				return;
 			}
