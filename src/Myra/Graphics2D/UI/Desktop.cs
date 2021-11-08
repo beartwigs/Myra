@@ -247,7 +247,7 @@ namespace Myra.Graphics2D.UI
 			}
 		}
 
-		private RenderContext RenderContext
+		public RenderContext RenderContext
 		{
 			get
 			{
@@ -255,7 +255,8 @@ namespace Myra.Graphics2D.UI
 
 				return _renderContext;
 			}
-		}
+            set => _renderContext = value;
+        }
 
 		public float Opacity { get; set; }
 
