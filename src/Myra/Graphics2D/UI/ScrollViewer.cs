@@ -401,21 +401,21 @@ namespace Myra.Graphics2D.UI
 		{
 			base.OnMouseWheel(delta);
 
-			if (!_verticalScrollingOn)
+			if (_verticalScrollingOn)
 			{
-				return;
-			}
+                _scrollbarOrientation = Orientation.Vertical;
 
-			var step = 10 * ScrollMaximum.Y / _thumbMaximumY;
-			if (delta < 0)
-			{
-				_scrollbarOrientation = Orientation.Vertical;
-				MoveThumb(step);
+				var step = 10 * ScrollMaximum.Y / _thumbMaximumY;
+
+                MoveThumb(step * Math.Sign(-delta));
 			}
-			else if (delta > 0)
+			else if (_horizontalScrollingOn)
 			{
-				_scrollbarOrientation = Orientation.Vertical;
-				MoveThumb(-step);
+                _scrollbarOrientation = Orientation.Horizontal;
+
+                var step = 10 * ScrollMaximum.Y / _thumbMaximumY;
+
+                MoveThumb(step * Math.Sign(-delta));
 			}
 		}
 

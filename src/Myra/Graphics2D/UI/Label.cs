@@ -156,6 +156,18 @@ namespace Myra.Graphics2D.UI
 			get; set;
 		}
 
+        [Category("Appearance")]
+        public Color ShadowTextColor
+        {
+            get; set;
+        }
+
+        [Category("Appearance")]
+        public bool DrawTextShadow
+        {
+            get; set;
+        }
+
 		internal Color? PressedTextColor
 		{
 			get; set;
@@ -200,7 +212,7 @@ namespace Myra.Graphics2D.UI
 
 			var textToDraw = (_autoEllipsisMethod == AutoEllipsisMethod.None) 
 				? _formattedText : _autoEllipsisText;
-			textToDraw.Draw(context, TextAlign, bounds, context.View, color, useChunkColor);
+			textToDraw.Draw(context, TextAlign, bounds, context.View, color, useChunkColor, DrawTextShadow, ShadowTextColor);
 		}
 
 		protected override Point InternalMeasure(Point availableSize)

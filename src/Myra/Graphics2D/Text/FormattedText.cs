@@ -532,7 +532,7 @@ namespace Myra.Graphics2D.Text
 			return null;
 		}
 
-		public void Draw(RenderContext context, TextAlign align, Rectangle bounds, Rectangle clip, Color textColor, bool useChunkColor)
+		public void Draw(RenderContext context, TextAlign align, Rectangle bounds, Rectangle clip, Color textColor, bool useChunkColor, bool drawTextShadow = false, Color shadowColor = default)
 		{
 			var y = bounds.Y;
 			foreach (var line in Lines)
@@ -551,6 +551,10 @@ namespace Myra.Graphics2D.Text
 							break;
 					}
 
+                    if (drawTextShadow)
+                    {
+                        line.Draw(context, new Vector2(x + 1, y + 1), shadowColor, false);
+                    }
 					textColor = line.Draw(context, new Vector2(x, y), textColor, useChunkColor);
 				}
 				else
