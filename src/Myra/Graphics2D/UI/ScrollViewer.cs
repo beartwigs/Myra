@@ -231,7 +231,7 @@ namespace Myra.Graphics2D.UI
 			}
 		}
 
-		protected internal override MouseWheelFocusType MouseWheelFocusType => _verticalScrollingOn ? MouseWheelFocusType.Hover : MouseWheelFocusType.None;
+		protected internal override MouseWheelFocusType MouseWheelFocusType => MouseWheelFocusType.Hover;
 
 		public override Desktop Desktop
 		{
@@ -413,7 +413,7 @@ namespace Myra.Graphics2D.UI
 			{
                 _scrollbarOrientation = Orientation.Horizontal;
 
-                var step = 10 * ScrollMaximum.Y / _thumbMaximumY;
+                var step = 10 * ScrollMaximum.X / _thumbMaximumX;
 
                 MoveThumb(step * Math.Sign(-delta));
 			}
