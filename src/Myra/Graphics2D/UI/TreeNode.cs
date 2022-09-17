@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 #elif STRIDE
 using Stride.Core.Mathematics;
 #else
-using System.Drawing;
+using Color = FontStashSharp.FSColor;
 #endif
 
 namespace Myra.Graphics2D.UI
@@ -75,8 +75,6 @@ namespace Myra.Graphics2D.UI
 		{
 			get { return InternalChild; }
 		}
-
-		internal Rectangle RowBounds { get; set; }
 
 		internal bool RowVisible { get; set; }
 

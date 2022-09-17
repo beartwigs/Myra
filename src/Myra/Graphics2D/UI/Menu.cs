@@ -17,6 +17,7 @@ using Stride.Input;
 #else
 using System.Drawing;
 using Myra.Platform;
+using Color = FontStashSharp.FSColor;
 #endif
 
 namespace Myra.Graphics2D.UI
@@ -573,7 +574,7 @@ namespace Myra.Graphics2D.UI
 				return;
 			}
 
-			if (menuItem.CanOpen && OpenMenuItem != menuItem)
+			if (Desktop.ContextMenu != this && menuItem.CanOpen && OpenMenuItem != menuItem)
 			{
 				SelectedIndex = HoverIndex;
 			}
@@ -582,7 +583,11 @@ namespace Myra.Graphics2D.UI
 		private void ShowSubMenu(MenuItem menuItem)
 		{
 			var bounds = GetItemBounds(menuItem.Index);
-			Desktop.ShowContextMenu(menuItem.SubMenu, new Point(bounds.X, bounds.Bottom));
+
+			var pos = this is HorizontalMenu ? new Point(bounds.X, bounds.Bottom) : new Point(bounds.Right, bounds.Y);
+			pos = ToGlobal(pos);
+
+			Desktop.ShowContextMenu(menuItem.SubMenu, pos);
 			OpenMenuItem = menuItem;
 		}
 
@@ -593,7 +598,11 @@ namespace Myra.Graphics2D.UI
 				try
 				{
 					_internalSetSelectedIndex = true;
-					Desktop.HideContextMenu();
+
+					if (Desktop.ContextMenu != this)
+					{
+						Desktop.HideContextMenu();
+					}
 				}
 				finally
 				{

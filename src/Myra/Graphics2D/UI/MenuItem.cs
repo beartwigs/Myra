@@ -3,15 +3,15 @@ using System.ComponentModel;
 using System.Xml.Serialization;
 using System;
 using Myra.Attributes;
-using Myra.Graphics2D.UI.Styles;
 using Myra.MML;
+using FontStashSharp.RichText;
 
 #if MONOGAME || FNA
 using Microsoft.Xna.Framework;
 #elif STRIDE
 using Stride.Core.Mathematics;
 #else
-using System.Drawing;
+using Color = FontStashSharp.FSColor;
 #endif
 
 namespace Myra.Graphics2D.UI
@@ -58,7 +58,6 @@ namespace Myra.Graphics2D.UI
 				_text = value;
 				_displayTextDirty = true;
 
-				var specialCharColor = Stylesheet.Current.HorizontalMenuStyle.SpecialCharColor;
 				UnderscoreChar = null;
 				if (value != null)
 				{
@@ -258,17 +257,13 @@ namespace Myra.Graphics2D.UI
 			}
 			else
 			{
-				var originalColor = Menu.Orientation == Orientation.Horizontal ?
-					Stylesheet.Current.HorizontalMenuStyle.LabelStyle.TextColor :
-					Stylesheet.Current.VerticalMenuStyle.LabelStyle.TextColor;
+				var originalColor = Menu.MenuStyle.LabelStyle.TextColor;
 				if (Color != null)
 				{
 					originalColor = Color.Value;
 				}
 
-				var specialCharColor = Menu.Orientation == Orientation.Horizontal ?
-					Stylesheet.Current.HorizontalMenuStyle.SpecialCharColor :
-					Stylesheet.Current.VerticalMenuStyle.SpecialCharColor;
+				var specialCharColor = Menu.MenuStyle.SpecialCharColor;
 				var underscoreIndex = Text.IndexOf('&');
 
 				var underscoreChar = Text[underscoreIndex + 1];
@@ -278,9 +273,9 @@ namespace Myra.Graphics2D.UI
 				if (specialCharColor != null)
 				{
 					_displayText = Text.Substring(0, underscoreIndex) +
-						@"\c[" + specialCharColor.Value.ToHexString() + "]" +
+						@"/c[" + specialCharColor.Value.ToHexString() + "]" +
 						underscoreChar.ToString() +
-						@"\c[" + originalColor.ToHexString() + "]" +
+						@"/c[" + originalColor.ToHexString() + "]" +
 						Text.Substring(underscoreIndex + 2);
 				}
 				else

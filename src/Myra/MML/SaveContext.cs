@@ -9,13 +9,14 @@ using Myra.Attributes;
 using System.Linq;
 using Myra.Graphics2D;
 using FontStashSharp;
+using FontStashSharp.RichText;
 
 #if MONOGAME || FNA
 using Microsoft.Xna.Framework;
 #elif STRIDE
 using Stride.Core.Mathematics;
 #else
-using System.Drawing;
+using Color = FontStashSharp.FSColor;
 #endif
 
 namespace Myra.MML
@@ -54,7 +55,11 @@ namespace Myra.MML
 				{
 					string str = null;
 
-					if (property.PropertyType == typeof(Color?))
+					var serializer = FindSerializer(property.PropertyType);
+					if (serializer != null)
+					{
+						str = serializer.Serialize(value);
+					} else if (property.PropertyType == typeof(Color?))
 					{
 						str = ((Color?)value).Value.ToHexString();
 					}

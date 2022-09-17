@@ -2,6 +2,9 @@
 using System.Reflection;
 using Myra.Graphics2D;
 using System;
+using System.Collections.Generic;
+using Myra.MML;
+using FontStashSharp.RichText;
 
 #if MONOGAME || FNA
 using Microsoft.Xna.Framework;
@@ -9,12 +12,20 @@ using Microsoft.Xna.Framework;
 using Stride.Core.Mathematics;
 #else
 using System.Drawing;
+using System.Numerics;
+using Color = FontStashSharp.FSColor;
 #endif
 
 namespace Myra.Utility
 {
 	public static class Serialization
 	{
+		public static readonly Dictionary<Type, ITypeSerializer> _serializers = new Dictionary<Type, ITypeSerializer>
+		{
+			{typeof(Vector2), new Vector2Serializer()},
+			{typeof(Thickness), new ThicknessSerializer()},
+		};
+
 		public static bool HasDefaultValue(this PropertyInfo property, object value)
 		{
 			if (property.PropertyType == typeof(Thickness) &&
@@ -45,6 +56,14 @@ namespace Myra.Utility
 				if (Equals(value, defaultAttributeValue))
 				{
 					// Skip default
+					return true;
+				}
+
+				if (defaultAttributeValue != null &&
+					defaultAttributeValue.GetType() == typeof(string) && 
+					_serializers.TryGetValue(property.PropertyType, out ITypeSerializer typeSerializer) &&
+					(string)defaultAttributeValue == typeSerializer.Serialize(value))
+				{
 					return true;
 				}
 			}

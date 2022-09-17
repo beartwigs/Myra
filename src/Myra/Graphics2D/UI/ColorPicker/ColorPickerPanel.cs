@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Myra.Utility;
+using FontStashSharp.RichText;
 
 #if MONOGAME || FNA
 using Microsoft.Xna.Framework;
@@ -8,6 +9,7 @@ using Microsoft.Xna.Framework;
 using Stride.Core.Mathematics;
 #else
 using System.Drawing;
+using Color = FontStashSharp.FSColor;
 #endif
 
 using ColorHSV = Myra.Utility.ColorHSV;
@@ -27,22 +29,22 @@ namespace Myra.Graphics2D.UI.ColorPicker
 
 		public static readonly Color[] UserColors = new[]
 		{
-			ColorStorage.CreateColor(255, 255, 255),
-			ColorStorage.CreateColor(217, 217, 217),
-			ColorStorage.CreateColor(178, 178, 178),
-			ColorStorage.CreateColor(140, 140, 140),
-			ColorStorage.CreateColor(102, 102, 102),
-			ColorStorage.CreateColor(64, 64, 64),
-			ColorStorage.CreateColor(32, 32, 32),
-			ColorStorage.CreateColor(0, 0, 0),
-			ColorStorage.CreateColor(254, 57, 48),
-			ColorStorage.CreateColor(255, 149, 3),
-			ColorStorage.CreateColor(255, 204, 1),
-			ColorStorage.CreateColor(75, 217, 97),
-			ColorStorage.CreateColor(91, 198, 250),
-			ColorStorage.CreateColor(3, 121, 255),
-			ColorStorage.CreateColor(87, 86, 213),
-			ColorStorage.CreateColor(207, 86, 191)
+			new Color(255, 255, 255),
+			new Color(217, 217, 217),
+			new Color(178, 178, 178),
+			new Color(140, 140, 140),
+			new Color(102, 102, 102),
+			new Color(64, 64, 64),
+			new Color(32, 32, 32),
+			new Color(0, 0, 0),
+			new Color(254, 57, 48),
+			new Color(255, 149, 3),
+			new Color(255, 204, 1),
+			new Color(75, 217, 97),
+			new Color(91, 198, 250),
+			new Color(3, 121, 255),
+			new Color(87, 86, 213),
+			new Color(207, 86, 191)
 		};
 
 		public Color Color
@@ -50,7 +52,7 @@ namespace Myra.Graphics2D.UI.ColorPicker
 			get
 			{
 				var c = _colorDisplay.Color;
-				return ColorStorage.CreateColor(c.R,
+				return new Color(c.R,
 					c.G,
 					c.B,
 					DisplayAlpha);
@@ -76,7 +78,7 @@ namespace Myra.Graphics2D.UI.ColorPicker
 
 			set
 			{
-				Color = ColorStorage.CreateColor(value, Color.G, Color.B, Color.A);
+				Color = new Color(value, Color.G, Color.B, Color.A);
 			}
 		}
 
@@ -89,7 +91,7 @@ namespace Myra.Graphics2D.UI.ColorPicker
 
 			set
 			{
-				Color = ColorStorage.CreateColor(Color.R, value, Color.B, Color.A);
+				Color = new Color(Color.R, value, Color.B, Color.A);
 			}
 		}
 
@@ -102,7 +104,7 @@ namespace Myra.Graphics2D.UI.ColorPicker
 
 			set
 			{
-				Color = ColorStorage.CreateColor(Color.R, Color.G, value, Color.A);
+				Color = new Color(Color.R, Color.G, value, Color.A);
 			}
 		}
 
@@ -136,7 +138,14 @@ namespace Myra.Graphics2D.UI.ColorPicker
 		}
 
 		private ColorHSV colorHSV;
-		private bool hsPickerActive, vPickerActive;
+		private enum ActiveState
+		{
+			None,
+			ColorPickerActive,
+			GradientActive
+		}
+
+		private ActiveState _activeState;
 
 		public ColorPickerPanel()
 		{
@@ -211,10 +220,12 @@ namespace Myra.Graphics2D.UI.ColorPicker
 			_colorBackground.Renderable = checkerboardRenderable;
 
 			_colorWheel.Renderable = DefaultAssets.UITextureRegionAtlas["color-picker-wheel"];
-			_colorWheel.TouchDown += (s, e) => hsPickerActive = true;
+			_colorWheel.TouchDown += (s, a) => HsPickerMove(Desktop.TouchPosition);
+			_colorWheel.TouchMoved += (s, a) => HsPickerMove(Desktop.TouchPosition);
 
 			_gradient.Renderable = DefaultAssets.UITextureRegionAtlas["color-picker-gradient"];
-			_gradient.TouchDown += (s, e) => vPickerActive = true;
+			_gradient.TouchDown += (s, e) => VPickerMove(Desktop.TouchPosition);
+			_gradient.TouchMoved += (s, e) => VPickerMove(Desktop.TouchPosition);
 
 			OnColorChanged(Color.White);
 		}
@@ -266,30 +277,18 @@ namespace Myra.Graphics2D.UI.ColorPicker
 			}
 		}
 
-		public override void UpdateLayout()
-		{
-			base.UpdateLayout();
-
-			if (!Desktop.DefaultMouseInfoGetter().IsLeftButtonDown)
-			{
-				hsPickerActive = false;
-				vPickerActive = false;
-			}
-			if (hsPickerActive)
-			{
-				HsPickerMove(Desktop.MousePosition);
-			}
-			if (vPickerActive)
-			{
-				VPickerMove(Desktop.MousePosition);
-			}
-		}
-
 		private void HsPickerMove(Point p)
 		{
+			if (_activeState != ActiveState.ColorPickerActive)
+			{
+				return;
+			}
+
+			p = _colorWheel.ToLocal(p);
+
 			int r = WheelHeight / 2;
-			int x = p.X - _colorWheel.Bounds.Location.X - r - _hsPicker.Bounds.Height / 2;
-			int y = p.Y - _colorWheel.Bounds.Location.Y - r - _hsPicker.Bounds.Width / 2;
+			int x = p.X - r - _hsPicker.Bounds.Height / 2;
+			int y = p.Y - r - _hsPicker.Bounds.Width / 2;
 			float angle = (float)Math.Atan2(x, y);
 			float rsquared = Math.Min(x * x + y * y, r * r);
 			float radius = (float)Math.Sqrt(rsquared);
@@ -315,7 +314,14 @@ namespace Myra.Graphics2D.UI.ColorPicker
 
 		private void VPickerMove(Point p)
 		{
-			int x = p.Y - _gradient.Bounds.Location.Y - _hsPicker.Bounds.Height / 2;
+			if (_activeState != ActiveState.GradientActive)
+			{
+				return;
+			}
+
+			p = _gradient.ToLocal(p);
+
+			int x = p.Y - _hsPicker.Bounds.Height / 2;
 			x = Math.Max(0, Math.Min(x, WheelHeight));
 			_vPicker.Top = x;
 
@@ -329,6 +335,61 @@ namespace Myra.Graphics2D.UI.ColorPicker
 			_vPicker.Tag = true;
 			OnColorChanged(hsv);
 			_vPicker.Tag = false;
+		}
+
+		public override void OnTouchDown()
+		{
+			base.OnTouchDown();
+
+			var position = Desktop.TouchPosition;
+			if (_colorWheel.ContainsTouch)
+			{
+				_activeState = ActiveState.ColorPickerActive;
+				HsPickerMove(position);
+			}
+			else if (_gradient.ContainsTouch)
+			{
+				_activeState = ActiveState.GradientActive;
+				VPickerMove(position);
+			}
+			else
+			{
+				_activeState = ActiveState.None;
+			}
+		}
+
+		public override void OnTouchMoved()
+		{
+			base.OnTouchMoved();
+
+			var position = Desktop.TouchPosition;
+			if (_activeState == ActiveState.GradientActive)
+			{
+				VPickerMove(position);
+			}
+			else if (_colorWheel.ContainsTouch)
+			{
+				_activeState = ActiveState.ColorPickerActive;
+				HsPickerMove(position);
+			}
+			else
+			{
+				_activeState = ActiveState.None;
+			}
+		}
+
+		public override void OnTouchLeft()
+		{
+			base.OnTouchLeft();
+
+			_activeState = ActiveState.None;
+		}
+
+		public override void OnTouchUp()
+		{
+			base.OnTouchUp();
+
+			_activeState = ActiveState.None;
 		}
 
 		private void ButtonSaveColorDown(object sender, EventArgs e)
@@ -388,7 +449,7 @@ namespace Myra.Graphics2D.UI.ColorPicker
 			if (byte.TryParse(st[0], out byte r) && byte.TryParse(st[1], out byte g) && byte.TryParse(st[2], out byte b))
 			{
 				_inputRGB.Tag = true;
-				OnColorChanged(ColorStorage.CreateColor(r, g, b));
+				OnColorChanged(new Color(r, g, b));
 				_inputRGB.Tag = false;
 			}
 		}
@@ -435,7 +496,7 @@ namespace Myra.Graphics2D.UI.ColorPicker
 			{
 				_inputHEX.Tag = true;
 				var c = color.Value;
-				OnColorChanged(ColorStorage.CreateColor(c.R, c.G, c.B));
+				OnColorChanged(new Color(c.R, c.G, c.B));
 				_inputHEX.Tag = false;
 			}
 		}
@@ -471,7 +532,7 @@ namespace Myra.Graphics2D.UI.ColorPicker
 		private void OnColorChanged(ColorHSV h)
 		{
 			var c = h.ToRGB();
-			c = ColorStorage.CreateColor(c.R, c.G, c.B, 255);
+			c = new Color(c.R, c.G, c.B, (byte)255);
 			OnColorChanged(c, h);
 		}
 
@@ -507,7 +568,7 @@ namespace Myra.Graphics2D.UI.ColorPicker
 				_vPicker.Top = (int)(hsv.V / -100f * WheelHeight) + WheelHeight;
 			}
 
-			_colorWheel.Color = ColorStorage.CreateColor((int)(hsv.V * 255.0f / 100f), (int)(hsv.V * 255.0f / 100f), (int)(hsv.V * 255.0f / 100f));
+			_colorWheel.Color = new Color((int)(hsv.V * 255.0f / 100f), (int)(hsv.V * 255.0f / 100f), (int)(hsv.V * 255.0f / 100f));
 			
 			_colorDisplay.Color = rgb;
 			

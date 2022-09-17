@@ -2,6 +2,7 @@
 using System;
 using System.Drawing;
 using System.Numerics;
+using Color = FontStashSharp.FSColor;
 
 namespace Myra.Platform
 {
@@ -21,9 +22,9 @@ namespace Myra.Platform
 			_myraRenderer = myraRenderer;
 		}
 
-		public void Draw(object texture, Vector2 pos, Rectangle? src, Color color, float rotation, Vector2 origin, Vector2 scale, float depth)
+		public void Draw(object texture, Vector2 pos, Rectangle? src, Color color, float rotation, Vector2 scale, float depth)
 		{
-			_myraRenderer.Draw(texture, pos, src, color, rotation, origin, scale, depth);
+			_myraRenderer.Draw(texture, pos, src, color, rotation, scale, depth);
 		}
 	}
 }

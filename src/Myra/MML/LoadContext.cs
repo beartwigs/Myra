@@ -10,13 +10,14 @@ using System.Xml.Linq;
 using Myra.Attributes;
 using FontStashSharp;
 using Myra.Utility;
+using FontStashSharp.RichText;
 
 #if MONOGAME || FNA
 using Microsoft.Xna.Framework;
 #elif STRIDE
 using Stride.Core.Mathematics;
 #else
-using System.Drawing;
+using Color = FontStashSharp.FSColor;
 #endif
 
 namespace Myra.MML
@@ -60,6 +61,12 @@ namespace Myra.MML
 					object value = null;
 
 					var propertyType = property.PropertyType;
+
+					var serializer = FindSerializer(propertyType);
+					if (serializer != null)
+					{
+						value = serializer.Deserialize(attr.Value);
+					} else 
 					if (propertyType.IsEnum)
 					{
 						value = Enum.Parse(propertyType, attr.Value);
@@ -98,16 +105,6 @@ namespace Myra.MML
 							{
 								baseObject.Resources[property.Name] = attr.Value;
 							}
-						}
-						catch (Exception)
-						{
-						}
-					}
-					else if (propertyType == typeof(Thickness))
-					{
-						try
-						{
-							value = Thickness.FromString(attr.Value);
 						}
 						catch (Exception)
 						{

@@ -12,7 +12,6 @@ using Microsoft.Xna.Framework;
 #elif STRIDE
 using Stride.Core.Mathematics;
 #else
-using System.Drawing;
 #endif
 
 namespace Myra.Graphics2D.UI.Styles
@@ -53,10 +52,10 @@ namespace Myra.Graphics2D.UI.Styles
 					var fontFile = el.Attribute("File").Value;
 					if (fontFile.EndsWith(".ttf") || fontFile.EndsWith(".otf"))
 					{
-						var parts = new List<string>
-					{
-						fontFile
-					};
+						var parts = new List<string>()
+						{
+							fontFile
+						};
 
 						var typeAttribute = el.Attribute("Effect");
 						if (typeAttribute != null)
@@ -65,6 +64,11 @@ namespace Myra.Graphics2D.UI.Styles
 
 							var amountAttribute = el.Attribute("Amount");
 							parts.Add(amountAttribute.Value);
+						}
+
+						if (el.Attribute("Size") == null)
+						{
+							throw new Exception($"Can't load stylesheet ttf font '{fontFile}', since Size isn't specified.");
 						}
 
 						parts.Add(el.Attribute("Size").Value);

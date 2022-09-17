@@ -15,6 +15,7 @@ using Stride.Input;
 #else
 using System.Drawing;
 using Myra.Platform;
+using Color = FontStashSharp.FSColor;
 #endif
 
 namespace Myra.Graphics2D.UI
@@ -202,26 +203,22 @@ namespace Myra.Graphics2D.UI
 			SetStyle(styleName);
 		}
 
-		public override void UpdateLayout()
+		public override void InternalArrange()
 		{
-			base.UpdateLayout();
+			base.InternalArrange();
 
 			if (!IsWindowPlaced)
 			{
 				CenterOnDesktop();
 				IsWindowPlaced = true;
-
-				// Need to call base.UpdateLayout again in order for the new Left/Top values be applied
-				base.UpdateLayout();
 			}
 		}
 
 		public void CenterOnDesktop()
 		{
 			var size = Bounds.Size();
-			var layoutScale = MyraEnvironment.LayoutScale.GetValueOrDefault(1);
-			Left = ((int)(ContainerBounds.Width / layoutScale) - size.X) / 2;
-			Top = ((int)(ContainerBounds.Height / layoutScale) - size.Y) / 2;
+			Left = (ContainerBounds.Width - size.X) / 2;
+			Top = (ContainerBounds.Height - size.Y) / 2;
 		}
 
 		public override void OnTouchDown()
